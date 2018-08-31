@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: LH User Taxonomies
-Plugin URI: http://lhero.org/plugins/lh-user-taxonomies/
-Author: Peter Shaw
-Author URI: http://shawfactor.com/
-Description: Simplify the process of adding support for custom taxonomies for Users. Just use `register_taxonomy` and everything else is taken care of. With added functions by Peter Shaw.
+Plugin Name: Further Education User Taxonomies
+Plugin URI: https://github.com/vdudas/furthered-user-taxonomie
+Author: Vladimir Dudas
+Author URI: https://github.com/vdudas/furthered-user-taxonomie 
+Description: Simplify the process of adding support for custom taxonomies for Users. Just use `register_taxonomy` and everything else is taken care of. With added functions by Peter Shaw and Vladimir Dudas.
 Version:	1.4
 == Changelog ==
 = 1.0 =
@@ -22,12 +22,12 @@ Version:	1.4
 License:
 Released under the GPL license
 http://www.gnu.org/copyleft/gpl.html
-Copyright 2014  Peter Shaw  (email : pete@localhero.biz)
+Copyright 2018 Vladimir Dudas / Peter Shaw  (email : pete@localhero.biz)
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published bythe Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-class LH_User_Taxonomies_plugin {
+class FurtherEd_User_Taxonomies_plugin {
 	private static $taxonomies	= array();
 	
 	/**
@@ -342,4 +342,4 @@ $Query->query_where .= " AND $wpdb->users.ID IN ($ids)";
 	
 }
 }
-new LH_User_Taxonomies_plugin;
+new FurtherEd_User_Taxonomies_plugin;
