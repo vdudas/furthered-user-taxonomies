@@ -1,9 +1,9 @@
 === LH User Taxonomies ===
-Contributors: shawfactor
+Contributors: shawfactor, vdudas
 Donate link: http://lhero.org/plugins/lh-user-taxonomies/
 Tags: user, users, taxonomy, custom taxonomy, register_taxonomy, developer
 Requires at least: 3.0
-Tested up to: 4.2
+Tested up to: 4.9.6
 Stable tag: trunk
 
 Simplify the process of adding support for custom taxonomies for Users. Just use `register_taxonomy` and everything else is taken care of.
@@ -59,14 +59,11 @@ Check out [our documentation][docs] for more information on how to register user
 
 All tickets for the project are being tracked on [GitHub][].
 
-
-[docs]: http://lhero.org/plugins/lh-user-taxonomies/
-[GitHub]: https://github.com/shawfactor/lh-user-taxonomies
-
+[GitHub]: https://github.com/vdudas/furthered-user-taxonomies
 
 == Installation ==
 
-1. Upload the `lh-user-taxonomies` folder to the `/wp-content/plugins/` directory
+1. Upload the `furthered-user-taxonomies` folder to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
 1. Use `register_taxonomy` as shown in the description
 
