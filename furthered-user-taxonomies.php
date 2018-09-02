@@ -49,8 +49,8 @@ class FurtherEd_User_Taxonomies_plugin {
 		add_action('edit_user_profile_update',	array($this, 'save_profile'));
 		add_action('user_register',	array($this, 'save_profile'));
 		add_filter('sanitize_user',				array($this, 'restrict_username'));
-		add_filter('manage_users_columns', array($this, 'lh_user_taxonomies_add_user_id_column'));
-		add_action('manage_users_custom_column',  array($this, 'lh_user_taxonomies_add_taxonomy_column_content'), 10, 3);
+		add_filter('manage_users_columns', array($this, 'furthered_user_taxonomies_add_user_id_column'));
+		add_action('manage_users_custom_column',  array($this, 'furthered_user_taxonomies_add_taxonomy_column_content'), 10, 3);
                 add_action('pre_user_query', array($this, 'user_query'));
 	}
 	
@@ -76,9 +76,9 @@ class FurtherEd_User_Taxonomies_plugin {
 		add_action("manage_{$taxonomy}_custom_column",	array($this, 'set_user_column_values'), 10, 3);
 		
 		// Set the callback to update the count if not already set
-		if(empty($args->update_count_callback)) {
-			$args->update_count_callback	= array($this, 'update_count');
-		}
+		// if(empty($args->update_count_callback)) {
+		// 	$args->update_count_callback	= array($this, 'update_count');
+		// }
 		
 		// We're finished, make sure we save out changes
 		$wp_taxonomies[$taxonomy]		= $args;
@@ -160,6 +160,7 @@ class FurtherEd_User_Taxonomies_plugin {
 			echo $term->count;
 		}
 	}
+
 	private function buildTree( array &$elements, $parentId = 0 ) {
 	    $branch = array();
 	    foreach ($elements as $element) {
@@ -174,6 +175,7 @@ class FurtherEd_User_Taxonomies_plugin {
 	    }
 	    return $branch;
 	}
+
 	private function renderTree( $elements, $stack, $user, $key, $input = 'checkbox' ) {
 		foreach ( $elements as $element ) {
 			?>
@@ -207,11 +209,13 @@ class FurtherEd_User_Taxonomies_plugin {
 		
 		foreach(self::$taxonomies as $key=>$taxonomy):
 			// Check the current user can assign terms for this taxonomy
-			//if(!current_user_can($taxonomy->cap->assign_terms)) continue;
+			if(!current_user_can($taxonomy->cap->assign_terms)) 
+				continue;
+
 			// Get all the terms in this taxonomy
 			$terms		= get_terms($key, array('hide_empty'=>false));
 			$stack 		= wp_list_pluck( wp_get_object_terms( $user->ID, $key ), 'slug' );
-			$input_type = ( $taxonomy->single_value ) ? 'radio' : 'checkbox' ;
+			$input_type = ( isset($taxonomy->single_value) && $taxonomy->single_value == true ) ? 'radio' : 'checkbox' ;
 			?>
 
 				<table class="form-table">
@@ -243,7 +247,7 @@ class FurtherEd_User_Taxonomies_plugin {
 	 * 
 	 * @param Integer $user_id	- The ID of the user to update
 	 */
-public function save_profile($user_id) {
+	public function save_profile($user_id) {
 		foreach(self::$taxonomies as $key=>$taxonomy) {
 			// Check the current user can edit this user and assign terms for this taxonomy
 			if(!current_user_can('edit_user', $user_id) && current_user_can($taxonomy->cap->assign_terms)) return false;
@@ -275,71 +279,89 @@ public function save_profile($user_id) {
 	 * Add columns for columns with
 	 * show_admin_column
 	 */
-	public function lh_user_taxonomies_add_user_id_column($columns) {
-$args=array(
-  'object_type' => array('user'),
-'show_admin_column' => true
-);
-$taxonomies = get_taxonomies( $args, "objects");
-foreach ($taxonomies as $taxonomy) {
-$columns[$taxonomy->name] = $taxonomy->labels->name;
-}
-    return $columns;
-}
+	public function furthered_user_taxonomies_add_user_id_column($columns) {
+		$args=array(
+  			'object_type' => array('user'),
+			'show_admin_column' => true
+		);
+
+		$taxonomies = get_taxonomies( $args, "objects");
+
+		foreach ($taxonomies as $taxonomy) {
+			$columns[$taxonomy->name] = $taxonomy->labels->name;
+		}
+
+    	return $columns;
+	}
 	/**
 	 * Just a private function to
 	 * populate column content
 	 */
-	private function lh_user_taxonomies_get_user_taxonomies($user, $taxonomy, $page = null) {
-$terms = wp_get_object_terms( $user, $taxonomy);
-		if(empty($terms)) { return false; }
+	private function furthered_user_taxonomies_get_user_taxonomies($user, $taxonomy, $page = null) {
+
+		$terms = wp_get_object_terms( $user, $taxonomy);
+		
+		if(empty($terms)) { 
+			return false; 
+		}
+
 		$in = array();
+		
 		foreach($terms as $term) {
 			$href = empty($page) ? add_query_arg(array($taxonomy => $term->slug), admin_url('users.php')) : add_query_arg(array('user-group' => $term->slug), $page);
 			$in[] = sprintf('%s%s%s', '<a href="'.$href.'" title="'.esc_attr($term->description).'">', $term->name, '</a>');
 		}
 	  	return implode('', $in);
 	}
+
 	/**
 	 * Add the column content
 	 * 
 	 */
-	public function lh_user_taxonomies_add_taxonomy_column_content($value, $column_name, $user_id) {
-if (taxonomy_exists($column_name)) {
-return $this->lh_user_taxonomies_get_user_taxonomies($user_id,$column_name);
-} else {
-    return $value;
-}
-}
+	public function furthered_user_taxonomies_add_taxonomy_column_content($value, $column_name, $user_id) {
+		if (taxonomy_exists($column_name)) {
+			return $this->furthered_user_taxonomies_get_user_taxonomies($user_id,$column_name);
+		} else {
+			return $value;
+		}
+	}
+
 	/**
 	 * Alters the User query
 	 * to return a different list based on query vars on users.php
 	 */
 	public function user_query($Query = '') {
 		global $pagenow,$wpdb;
-if ( $pagenow == 'users.php' ){
-$args=array(
-  'object_type' => array('user'),
-'show_admin_column' => true
-);
-$taxonomies = get_taxonomies( $args, "objects");
-foreach ($taxonomies as $taxonomy) {
-if(!empty($_GET[$taxonomy->name])) {
-$term = get_term_by('slug', esc_attr($_GET[$taxonomy->name]), $taxonomy->name);
-$new_ids = get_objects_in_term($term->term_id, $taxonomy->name);
-if (!isset($ids) || empty($ids)){  
-$ids = $new_ids;  
-} else {   
-$ids = array_intersect($ids, $new_ids);
-}
-}
-}
-if ( isset( $ids ) ){  
-$ids = implode(',', wp_parse_id_list( $ids ) );
-$Query->query_where .= " AND $wpdb->users.ID IN ($ids)";
-}
-}		
-	
-}
+
+		if ( $pagenow == 'users.php' ){
+
+			$args=array(
+			'object_type' => array('user'),
+			'show_admin_column' => true
+			);
+
+			$taxonomies = get_taxonomies( $args, "objects");
+
+			foreach ($taxonomies as $taxonomy) {
+				if(!empty($_GET[$taxonomy->name])) {
+
+					$term = get_term_by('slug', esc_attr($_GET[$taxonomy->name]), $taxonomy->name);
+					$new_ids = get_objects_in_term($term->term_id, $taxonomy->name);
+
+					if (!isset($ids) || empty($ids)){  
+						$ids = $new_ids;  
+					} else {   
+						$ids = array_intersect($ids, $new_ids);
+					}
+				}
+			}
+
+			if ( isset( $ids ) ){  
+				$ids = implode(',', wp_parse_id_list( $ids ) );
+				$Query->query_where .= " AND $wpdb->users.ID IN ($ids)";
+			}
+		}		
+			
+	}
 }
 new FurtherEd_User_Taxonomies_plugin;
