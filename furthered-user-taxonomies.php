@@ -170,7 +170,7 @@ class FurtherEd_User_Taxonomies_plugin {
 	                $element->children = $children;
 	            }
 	            $branch[$element->term_id] = $element;
-	            unset($elements[$element->term_id]);
+	            // unset($elements[$element->term_id]);
 	        }
 	    }
 	    return $branch;
